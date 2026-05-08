@@ -9,8 +9,8 @@ export default function Footer() {
   }, [])
 
   return (
-    <footer className="bg-primary-dark text-white/80 pt-16 pb-6 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
+    <footer className="bg-primary-dark text-white/80 pt-10 md:pt-16 pb-6 px-4 md:px-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 mb-10">
         <div>
           <h3 className="font-display text-white text-lg mb-4">🥜 NutriNuts</h3>
           <p className="text-sm leading-relaxed">Your trusted source for premium quality dry fruits and nuts. Sourced directly from farms across California, Afghanistan, Iran, and Chile.</p>

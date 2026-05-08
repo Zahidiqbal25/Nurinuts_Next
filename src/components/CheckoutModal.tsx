@@ -96,30 +96,30 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="modal-overlay open" onClick={onClose}>
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center px-7 py-5 bg-gradient-to-r from-primary-dark to-primary text-white shrink-0">
-          <div><h2 className="font-display text-xl">🛒 Checkout</h2><p className="text-xs opacity-75 mt-0.5">Complete your order</p></div>
+      <div className="bg-white rounded-none md:rounded-2xl max-w-4xl w-full h-full md:h-auto md:max-h-[92vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center px-5 md:px-7 py-4 md:py-5 bg-gradient-to-r from-primary-dark to-primary text-white shrink-0">
+          <div><h2 className="font-display text-lg md:text-xl">🛒 Checkout</h2><p className="text-xs opacity-75 mt-0.5">Complete your order</p></div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 text-white/80 flex items-center justify-center hover:bg-white/20">✕</button>
         </div>
 
         <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-[1fr_300px]">
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
             <p className="text-xs font-bold uppercase tracking-wider text-primary border-b-2 pb-2">👤 Contact Information</p>
             <input name="name" required placeholder="Full Name" defaultValue={user?.name || ''} className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input name="phone" required placeholder="Phone" defaultValue={user?.phone || ''} className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
               <input name="email" type="email" required placeholder="Email" defaultValue={user?.email || ''} className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
             </div>
 
             <p className="text-xs font-bold uppercase tracking-wider text-primary border-b-2 pb-2 pt-2">📍 Delivery Address</p>
             <textarea name="address" required placeholder="Street Address" defaultValue={user?.address || ''} className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary resize-none h-16" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input name="city" required placeholder="City" defaultValue={user?.city || ''} className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
               <input name="pincode" required placeholder="Pincode" defaultValue={user?.pincode || ''} className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
             </div>
 
             <p className="text-xs font-bold uppercase tracking-wider text-primary border-b-2 pb-2 pt-2">💳 Payment Method</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[['COD', '💵', 'Cash on Delivery', 'Pay when delivered'], ['Razorpay', '💳', 'Pay Online', 'Card / UPI / NetBanking']].map(([val, icon, name, desc]) => (
                 <label key={val} className={`flex items-center gap-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all ${payment === val ? 'border-primary bg-green-50' : 'border-gray-200 hover:border-primary-light'}`}>
                   <input type="radio" name="payment" value={val} checked={payment === val} onChange={() => setPayment(val)} className="hidden" />
@@ -134,7 +134,7 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
             </button>
           </form>
 
-          <div className="bg-gray-50 border-l p-5 overflow-y-auto">
+          <div className="bg-gray-50 border-t md:border-t-0 md:border-l p-4 md:p-5 overflow-y-auto">
             <p className="text-xs font-bold uppercase tracking-wider text-primary border-b-2 pb-2 mb-3">🛒 Order Summary</p>
             {cart.map(i => (
               <div key={i.id} className="flex items-center gap-2.5 py-2.5 border-b border-gray-200">

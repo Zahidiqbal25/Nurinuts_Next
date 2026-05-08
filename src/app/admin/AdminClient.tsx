@@ -133,15 +133,19 @@ export default function AdminClient() {
   }
 
   const nav = [['dashboard', '📊', 'Dashboard'], ['products', '📦', 'Products'], ['orders', '🧾', 'Orders'], ['categories', '🏷️', 'Categories'], ['users', '👥', 'Users']]
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-[99] lg:hidden" onClick={() => setSidebarOpen(false)} />}
+
       {/* Sidebar */}
-      <aside className="w-60 bg-primary-dark text-white py-5 fixed h-screen overflow-y-auto">
-        <div className="px-5 pb-5 border-b border-white/10 font-display text-lg">🥜 <span className="text-accent">NutriNuts</span></div>
+      <aside className={`w-60 bg-primary-dark text-white py-5 fixed h-screen overflow-y-auto z-[100] transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <div className="px-5 pb-5 border-b border-white/10 font-display text-lg flex justify-between items-center">🥜 <span className="text-accent">NutriNuts</span><button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/70 hover:text-white">✕</button></div>
         <nav className="mt-5 space-y-1">
           {nav.map(([key, icon, label]) => (
-            <button key={key} onClick={() => setSection(key)} className={`w-full text-left flex items-center gap-3 px-6 py-3 text-sm transition-colors ${section === key ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'}`}>
+            <button key={key} onClick={() => { setSection(key); setSidebarOpen(false) }} className={`w-full text-left flex items-center gap-3 px-6 py-3 text-sm transition-colors ${section === key ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'}`}>
               <span>{icon}</span> {label}
             </button>
           ))}
@@ -151,7 +155,13 @@ export default function AdminClient() {
       </aside>
 
       {/* Main */}
-      <main className="ml-60 flex-1 p-6 bg-[#faf8f5] min-h-screen">
+      <main className="lg:ml-60 flex-1 p-4 md:p-6 bg-[#faf8f5] min-h-screen">
+        {/* Mobile header */}
+        <div className="lg:hidden flex items-center justify-between mb-4 bg-white rounded-xl p-3 shadow-sm">
+          <button onClick={() => setSidebarOpen(true)} className="text-primary text-xl">☰</button>
+          <span className="font-display text-primary">Admin Panel</span>
+          <span></span>
+        </div>
         {section === 'dashboard' && (
           <>
             <h1 className="font-display text-2xl mb-6">Dashboard</h1>
@@ -185,8 +195,8 @@ export default function AdminClient() {
               <h1 className="font-display text-2xl">Products</h1>
               <button onClick={() => { setEditProduct(null); setImagePreview(''); setShowProductModal(true) }} className="btn-primary text-sm">+ Add Product</button>
             </div>
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
                 <thead><tr className="bg-gray-50 text-left text-xs uppercase text-gray-500"><th className="p-3">Image</th><th className="p-3">Name</th><th className="p-3">Category</th><th className="p-3">Price</th><th className="p-3">Qty</th><th className="p-3">Actions</th></tr></thead>
                 <tbody>
                   {products.map(p => (
@@ -212,7 +222,7 @@ export default function AdminClient() {
           <>
             <h1 className="font-display text-2xl mb-6">Orders ({orders.length})</h1>
             <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead><tr className="bg-gray-50 text-left text-xs uppercase text-gray-500"><th className="p-3">#</th><th className="p-3">Customer</th><th className="p-3">Items</th><th className="p-3">Total</th><th className="p-3">Payment</th><th className="p-3">Status</th><th className="p-3">Actions</th></tr></thead>
                 <tbody>
                   {orders.map(o => (
@@ -266,8 +276,8 @@ export default function AdminClient() {
         {section === 'users' && (
           <>
             <h1 className="font-display text-2xl mb-6">Users ({users.length})</h1>
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
+              <table className="w-full text-sm min-w-[500px]">
                 <thead><tr className="bg-gray-50 text-left text-xs uppercase text-gray-500"><th className="p-3">ID</th><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Phone</th><th className="p-3">City</th><th className="p-3">Actions</th></tr></thead>
                 <tbody>
                   {users.map(u => (
