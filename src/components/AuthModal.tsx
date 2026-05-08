@@ -10,11 +10,24 @@ export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mo
   const [otpStep, setOtpStep] = useState(false)
   const [otpCode, setOtpCode] = useState('')
   const [regData, setRegData] = useState<any>(null)
+  const [forgotStep, setForgotStep] = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
 
   function switchMode(m: 'login' | 'register') {
     setCurrentMode(m)
     setError('')
     onSwitch(m)
+  }
+
+  async function handleForgot(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(''); setLoading(true)
+    const fd = new FormData(e.currentTarget)
+    const res = await fetch('/api/users/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fd.get('email') }) })
+    const data = await res.json()
+    setLoading(false)
+    if (res.ok) setForgotSent(true)
+    else setError(data.error)
   }
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -53,6 +66,34 @@ export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mo
     else setError(data.error)
   }
 
+  if (forgotStep) {
+    return (
+      <div className="modal-overlay open" onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}>
+        <div className="bg-white rounded-xl max-w-md w-full p-8 relative">
+          <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+          {forgotSent ? (
+            <>
+              <h2 className="font-display text-xl mb-2">📧 Check Your Email</h2>
+              <p className="text-sm text-gray-500 mb-5">A password reset link has been sent to your email. It expires in 1 hour.</p>
+              <button onClick={() => { setForgotStep(false); setForgotSent(false) }} className="w-full btn-primary">Back to Login</button>
+            </>
+          ) : (
+            <>
+              <h2 className="font-display text-xl mb-2">🔑 Forgot Password</h2>
+              <p className="text-sm text-gray-500 mb-5">Enter your email and we&apos;ll send you a reset link.</p>
+              <form onSubmit={handleForgot} className="space-y-4">
+                <input name="email" type="email" required placeholder="Your email address" className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                <button type="submit" disabled={loading} className="w-full btn-primary">{loading ? 'Sending...' : 'Send Reset Link'}</button>
+              </form>
+              <p className="text-center text-sm text-gray-500 mt-4"><button onClick={() => { setForgotStep(false); setError('') }} className="text-primary font-semibold">Back to Login</button></p>
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   if (otpStep) {
     return (
       <div className="modal-overlay open" onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}>
@@ -83,7 +124,8 @@ export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mo
               {error && <p className="text-red-500 text-sm">{error}</p>}
               <button type="submit" className="w-full btn-primary">Login</button>
             </form>
-            <p className="text-center text-sm text-gray-500 mt-4">Don&apos;t have an account? <button onClick={() => switchMode('register')} className="text-primary font-semibold">Register</button></p>
+            <p className="text-center text-sm text-gray-500 mt-3"><button onClick={() => { setForgotStep(true); setError('') }} className="text-primary font-semibold">Forgot Password?</button></p>
+            <p className="text-center text-sm text-gray-500 mt-2">Don&apos;t have an account? <button onClick={() => switchMode('register')} className="text-primary font-semibold">Register</button></p>
           </>
         ) : (
           <>

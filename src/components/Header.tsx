@@ -37,7 +37,7 @@ export default function Header({ onSearch, onOpenAuth, onOpenTrack, onOpenProfil
         </div>
       )}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-3 md:gap-5">
-        <Link href="/" className="font-display text-xl md:text-2xl font-bold shrink-0">🥜 Nutri<span className="text-accent">Nuts</span></Link>
+        <Link href="/" className="font-display text-xl md:text-2xl font-bold shrink-0">🧵 Red<span className="text-accent">Thread</span></Link>
 
         {/* Desktop search */}
         <div className="flex-1 max-w-md relative hidden md:block">
@@ -59,7 +59,7 @@ export default function Header({ onSearch, onOpenAuth, onOpenTrack, onOpenProfil
           {!user ? (
             <>
               <button onClick={() => onOpenAuth('login')} className="text-sm px-2 md:px-3 py-2 rounded-lg hover:bg-white/10">👤 <span className="hidden sm:inline">Login</span></button>
-              <button onClick={onOpenTrack} className="text-sm px-3 py-2 rounded-lg hover:bg-white/10 hidden md:block">📦 Track</button>
+              <button onClick={onOpenTrack} className="text-sm px-3 py-2 rounded-lg hover:bg-white/10 hidden md:block">📦 Track Order</button>
             </>
           ) : (
             <div className="relative" ref={menuRef}>

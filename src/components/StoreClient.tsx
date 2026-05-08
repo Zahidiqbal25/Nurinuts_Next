@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { StoreProvider, useStore } from '@/lib/store-context'
 import Header from '@/components/Header'
 import CartSidebar from '@/components/CartSidebar'
@@ -7,12 +7,67 @@ import ProductCard from '@/components/ProductCard'
 import Footer from '@/components/Footer'
 import AuthModal from '@/components/AuthModal'
 import CheckoutModal from '@/components/CheckoutModal'
+import OrdersModal from '@/components/OrdersModal'
+import ProfileModal from '@/components/ProfileModal'
+import TrackOrderModal from '@/components/TrackOrderModal'
+
+function ResetPasswordModal({ token, onClose }: { token: string; onClose: () => void }) {
+  const { showToast } = useStore()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [done, setDone] = useState(false)
+
+  async function handleReset(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(''); setLoading(true)
+    const fd = new FormData(e.currentTarget)
+    const res = await fetch('/api/users/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, newPassword: fd.get('newPassword') }) })
+    const data = await res.json()
+    setLoading(false)
+    if (res.ok) { setDone(true); showToast('Password reset successfully!') }
+    else setError(data.error)
+  }
+
+  return (
+    <div className="modal-overlay open">
+      <div className="bg-white rounded-xl max-w-md w-full p-8">
+        {done ? (
+          <>
+            <h2 className="font-display text-xl mb-2">✅ Password Reset!</h2>
+            <p className="text-sm text-gray-500 mb-5">Your password has been updated. You can now log in.</p>
+            <button onClick={onClose} className="w-full btn-primary">Go to Login</button>
+          </>
+        ) : (
+          <>
+            <h2 className="font-display text-xl mb-2">🔑 Reset Password</h2>
+            <p className="text-sm text-gray-500 mb-5">Enter your new password below.</p>
+            <form onSubmit={handleReset} className="space-y-4">
+              <input name="newPassword" type="password" required minLength={6} placeholder="New password (min 6 chars)" className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              <button type="submit" disabled={loading} className="w-full btn-primary">{loading ? 'Resetting...' : 'Reset Password'}</button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function StoreContent({ initialProducts, initialCategories }: { initialProducts: any[]; initialCategories: any[] }) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [ordersOpen, setOrdersOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [trackOpen, setTrackOpen] = useState(false)
+  const [resetToken, setResetToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('reset_token')
+    if (token) { setResetToken(token); window.history.replaceState({}, '', '/') }
+  }, [])
 
   const filtered = useMemo(() => {
     let products = initialProducts
@@ -29,9 +84,9 @@ function StoreContent({ initialProducts, initialCategories }: { initialProducts:
       <Header
         onSearch={setSearch}
         onOpenAuth={setAuthMode}
-        onOpenTrack={() => {}}
-        onOpenProfile={() => {}}
-        onOpenOrders={() => {}}
+        onOpenTrack={() => setTrackOpen(true)}
+        onOpenProfile={() => setProfileOpen(true)}
+        onOpenOrders={() => setOrdersOpen(true)}
       />
       <CartSidebar onCheckout={() => setCheckoutOpen(true)} />
 
@@ -43,7 +98,7 @@ function StoreContent({ initialProducts, initialCategories }: { initialProducts:
           <p className="text-base md:text-lg opacity-90 max-w-xl mx-auto mb-6 md:mb-8">Handpicked premium quality dry fruits sourced directly from the world&apos;s best farms.</p>
           <div className="flex gap-3 md:gap-4 justify-center flex-wrap mb-8 md:mb-12">
             <a href="#products" className="bg-accent text-primary-dark px-6 md:px-8 py-3 md:py-3.5 rounded-full font-bold shadow-lg hover:-translate-y-1 transition-transform text-sm md:text-base">Shop Now →</a>
-            <a href="#why-us" className="border-2 border-white/50 px-6 md:px-8 py-3 md:py-3.5 rounded-full font-semibold hover:bg-white/10 transition-colors text-sm md:text-base">Why NutriNuts?</a>
+            <a href="#why-us" className="border-2 border-white/50 px-6 md:px-8 py-3 md:py-3.5 rounded-full font-semibold hover:bg-white/10 transition-colors text-sm md:text-base">Why Red Thread?</a>
           </div>
           <div className="flex justify-center gap-2 md:gap-4 flex-wrap">
             {['🌿 100% Natural', '✅ Quality Tested', '🚚 Free Delivery', '↩️ Easy Returns'].map(f => (
@@ -90,7 +145,7 @@ function StoreContent({ initialProducts, initialCategories }: { initialProducts:
 
       {/* Why Choose Us */}
       <section id="why-us" className="bg-gradient-to-br from-primary-dark to-primary py-12 md:py-16 px-4 md:px-6">
-        <h2 className="font-display text-2xl md:text-3xl text-center text-white mb-2">Why Choose NutriNuts?</h2>
+        <h2 className="font-display text-2xl md:text-3xl text-center text-white mb-2">Why Choose Red Thread?</h2>
         <p className="text-center text-white/70 mb-8 md:mb-10 text-sm md:text-base">We go the extra mile to bring you the best</p>
         <div className="max-w-5xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
@@ -113,6 +168,10 @@ function StoreContent({ initialProducts, initialCategories }: { initialProducts:
       {/* Modals */}
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onSwitch={setAuthMode} />}
       {checkoutOpen && <CheckoutModal onClose={() => setCheckoutOpen(false)} />}
+      {ordersOpen && <OrdersModal onClose={() => setOrdersOpen(false)} />}
+      {profileOpen && <ProfileModal onClose={() => setProfileOpen(false)} />}
+      {trackOpen && <TrackOrderModal onClose={() => setTrackOpen(false)} />}
+      {resetToken && <ResetPasswordModal token={resetToken} onClose={() => { setResetToken(null); setAuthMode('login') }} />}
     </>
   )
 }

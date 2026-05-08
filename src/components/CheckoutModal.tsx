@@ -51,7 +51,7 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: rzpOrder.amount, currency: rzpOrder.currency,
-          name: 'NutriNuts 🥜', order_id: rzpOrder.id,
+          name: 'Red Thread 🧵', order_id: rzpOrder.id,
           prefill: { name: customer.name, email: customer.email, contact: customer.phone },
           theme: { color: '#2d5016' },
           handler: async (response: any) => {

@@ -12,7 +12,7 @@ export default function Footer() {
     <footer className="bg-primary-dark text-white/80 pt-10 md:pt-16 pb-6 px-4 md:px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 mb-10">
         <div>
-          <h3 className="font-display text-white text-lg mb-4">🥜 NutriNuts</h3>
+          <h3 className="font-display text-white text-lg mb-4">🧵 Red Thread</h3>
           <p className="text-sm leading-relaxed">Your trusted source for premium quality dry fruits and nuts. Sourced directly from farms across California, Afghanistan, Iran, and Chile.</p>
           <div className="flex flex-wrap gap-2 mt-4">
             {['💳 Secure Payments', '🚚 Fast Delivery', '✅ Quality Assured'].map(b => (
@@ -24,7 +24,7 @@ export default function Footer() {
           <h3 className="font-display text-white text-lg mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
             <li><a href="#products" className="hover:text-accent">🛒 Shop All</a></li>
-            <li><a href="#why-us" className="hover:text-accent">✨ Why NutriNuts</a></li>
+            <li><a href="#why-us" className="hover:text-accent">✨ Why Red Thread</a></li>
             <li><a href="/admin" className="hover:text-accent">📊 Admin Panel</a></li>
           </ul>
         </div>
@@ -52,7 +52,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto pt-5 border-t border-white/10 text-center text-xs text-white/50">
-        © 2024 NutriNuts. All rights reserved. Made with ❤️ for nut lovers.
+        © 2024 Red Thread. All rights reserved. Made with ❤️ for nut lovers.
       </div>
     </footer>
   )

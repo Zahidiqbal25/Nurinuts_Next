@@ -15,6 +15,8 @@ export default function AdminClient() {
   const [showProductModal, setShowProductModal] = useState(false)
   const [imagePreview, setImagePreview] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [editCategory, setEditCategory] = useState<any>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined' && sessionStorage.getItem('df_admin') === 'true') setAuthed(true)
@@ -111,17 +113,100 @@ export default function AdminClient() {
     loadAll()
   }
 
+  async function saveCategory(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    await fetch(`/api/categories/${editCategory.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: fd.get('name'), emoji: fd.get('emoji') }) })
+    setEditCategory(null); loadAll()
+  }
+
   async function deleteUser(id: number) {
     if (!confirm('Delete this user?')) return
     await fetch(`/api/users/${id}`, { method: 'DELETE' })
     loadAll()
   }
 
+  function printInvoice(o: any) {
+    const items = Array.isArray(o.items) ? o.items : []
+    const subtotal = items.reduce((s: number, i: any) => s + i.price * i.qty, 0)
+    const shipping = subtotal >= 999 ? 0 : 50
+    const win = window.open('', '_blank', 'width=800,height=600')
+    if (!win) return
+    win.document.write(`<!DOCTYPE html><html><head><title>Invoice #${o.id}</title><style>
+      body{font-family:Arial,sans-serif;padding:40px;color:#222;max-width:700px;margin:0 auto}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #2d5016;padding-bottom:16px;margin-bottom:24px}
+      .brand{font-size:22px;font-weight:800;color:#2d5016}  .brand span{color:#d4a843}
+      .badge{background:#2d5016;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px}
+      h3{color:#2d5016;margin:20px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px}
+      table{width:100%;border-collapse:collapse;margin-top:8px}
+      th{background:#f5f5f5;padding:8px 10px;text-align:left;font-size:12px;text-transform:uppercase;color:#666}
+      td{padding:8px 10px;border-bottom:1px solid #eee;font-size:13px}
+      .total-row td{font-weight:700;font-size:15px;border-top:2px solid #2d5016;border-bottom:none}
+      .footer{margin-top:32px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:16px}
+      @media print{body{padding:20px}}
+    </style></head><body>
+      <div class="header">
+        <div><div class="brand">🧵 Red<span>Thread</span></div><div style="font-size:12px;color:#666;margin-top:4px">Premium Dry Fruits</div></div>
+        <div style="text-align:right"><div class="badge">INVOICE</div><div style="font-size:13px;margin-top:6px">#${o.id}</div><div style="font-size:11px;color:#666">${new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div><h3>Bill To</h3><div style="font-size:13px;line-height:1.8"><strong>${o.customerName}</strong><br/>${o.customerPhone}<br/>${o.customerEmail || ''}</div></div>
+        <div><h3>Ship To</h3><div style="font-size:13px;line-height:1.8">${o.customerAddress || '—'}<br/>${o.customerCity || ''} ${o.customerPincode || ''}</div></div>
+      </div>
+      <h3>Order Items</h3>
+      <table><thead><tr><th>Product</th><th>Weight</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead><tbody>
+        ${items.map((i: any) => `<tr><td>${i.name}</td><td>${i.weight}</td><td>${i.qty}</td><td>₹${i.price.toLocaleString()}</td><td>₹${(i.price * i.qty).toLocaleString()}</td></tr>`).join('')}
+      </tbody><tfoot>
+        <tr><td colspan="4" style="text-align:right;font-size:12px;color:#666;padding:6px 10px">Subtotal</td><td style="padding:6px 10px">₹${subtotal.toLocaleString()}</td></tr>
+        <tr><td colspan="4" style="text-align:right;font-size:12px;color:#666;padding:6px 10px">Shipping</td><td style="padding:6px 10px">${shipping === 0 ? 'FREE' : '₹' + shipping}</td></tr>
+        <tr class="total-row"><td colspan="4" style="text-align:right;padding:10px">Total</td><td style="padding:10px;color:#2d5016">₹${o.total?.toLocaleString()}</td></tr>
+      </tfoot></table>
+      <div style="margin-top:16px;font-size:12px"><strong>Payment:</strong> ${o.payment} &nbsp;|&nbsp; <strong>Status:</strong> ${o.status || 'Pending'}</div>
+      <div class="footer">Thank you for shopping with Red Thread! 🧵 &nbsp;|&nbsp; For support contact us at ${contact.email || ''}</div>
+    </body></html>`)
+    win.document.close()
+    win.focus()
+    setTimeout(() => { win.print(); win.close() }, 300)
+  }
+
+  function printLabel(o: any) {
+    const win = window.open('', '_blank', 'width=500,height=400')
+    if (!win) return
+    win.document.write(`<!DOCTYPE html><html><head><title>Label #${o.id}</title><style>
+      body{font-family:Arial,sans-serif;padding:0;margin:0}
+      .label{width:380px;border:2px dashed #333;padding:20px;margin:20px auto;position:relative}
+      .brand{font-size:16px;font-weight:800;color:#2d5016;border-bottom:1px solid #ccc;padding-bottom:8px;margin-bottom:12px}
+      .brand span{color:#d4a843}
+      .section{margin-bottom:10px}
+      .section label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#999;display:block;margin-bottom:2px}
+      .section p{font-size:13px;font-weight:600;margin:0;line-height:1.5}
+      .order-id{position:absolute;top:20px;right:20px;background:#2d5016;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700}
+      .divider{border:none;border-top:1px dashed #ccc;margin:10px 0}
+      .from{font-size:11px;color:#666;margin-top:10px}
+      @media print{body{margin:0}.label{border:2px dashed #333;margin:0}}
+    </style></head><body>
+      <div class="label">
+        <div class="brand">🧵 Red<span>Thread</span></div>
+        <div class="order-id">#${o.id}</div>
+        <div class="section"><label>Deliver To</label><p>${o.customerName}</p><p>${o.customerPhone}</p></div>
+        <div class="section"><label>Address</label><p>${o.customerAddress || '—'}</p><p>${o.customerCity || ''} — ${o.customerPincode || ''}</p></div>
+        <hr class="divider"/>
+        <div class="section"><label>Payment</label><p>${o.payment}</p></div>
+        <div class="section"><label>Order Date</label><p>${new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p></div>
+        <hr class="divider"/>
+        <div class="from">From: Red Thread &nbsp;|&nbsp; ${contact.address || ''} &nbsp;|&nbsp; ${contact.phone || ''}</div>
+      </div>
+    </body></html>`)
+    win.document.close()
+    win.focus()
+    setTimeout(() => { win.print(); win.close() }, 300)
+  }
+
   if (!authed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-dark to-primary">
         <div className="bg-white p-10 rounded-xl w-full max-w-sm shadow-2xl text-center">
-          <h1 className="font-display text-2xl text-primary mb-2">🥜 NutriNuts</h1>
+          <h1 className="font-display text-2xl text-primary mb-2">🧵 Red Thread</h1>
           <p className="text-gray-500 text-sm mb-6">Admin Panel Login</p>
           <form onSubmit={handleLogin}>
             <input name="password" type="password" placeholder="Enter admin password" required className="w-full px-4 py-3 border-2 rounded-lg mb-4 outline-none focus:border-primary" />
@@ -133,7 +218,6 @@ export default function AdminClient() {
   }
 
   const nav = [['dashboard', '📊', 'Dashboard'], ['products', '📦', 'Products'], ['orders', '🧾', 'Orders'], ['categories', '🏷️', 'Categories'], ['users', '👥', 'Users']]
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen">
@@ -142,7 +226,7 @@ export default function AdminClient() {
 
       {/* Sidebar */}
       <aside className={`w-60 bg-primary-dark text-white py-5 fixed h-screen overflow-y-auto z-[100] transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="px-5 pb-5 border-b border-white/10 font-display text-lg flex justify-between items-center">🥜 <span className="text-accent">NutriNuts</span><button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/70 hover:text-white">✕</button></div>
+        <div className="px-5 pb-5 border-b border-white/10 font-display text-lg flex justify-between items-center">🧵 <span className="text-accent">Red Thread</span><button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/70 hover:text-white">✕</button></div>
         <nav className="mt-5 space-y-1">
           {nav.map(([key, icon, label]) => (
             <button key={key} onClick={() => { setSection(key); setSidebarOpen(false) }} className={`w-full text-left flex items-center gap-3 px-6 py-3 text-sm transition-colors ${section === key ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'}`}>
@@ -159,7 +243,7 @@ export default function AdminClient() {
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between mb-4 bg-white rounded-xl p-3 shadow-sm">
           <button onClick={() => setSidebarOpen(true)} className="text-primary text-xl">☰</button>
-          <span className="font-display text-primary">Admin Panel</span>
+          <span className="font-display text-primary">Red Thread Admin</span>
           <span></span>
         </div>
         {section === 'dashboard' && (
@@ -237,7 +321,11 @@ export default function AdminClient() {
                           {['Pending', 'Confirmed', 'Shipped', 'Dispatched', 'Delivered', 'Cancelled'].map(s => <option key={s}>{s}</option>)}
                         </select>
                       </td>
-                      <td className="p-3"><button onClick={() => deleteOrder(o.id)} className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-red-100">🗑</button></td>
+                      <td className="p-3 flex gap-1 flex-wrap">
+                        <button onClick={() => printInvoice(o)} className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100" title="Print Invoice">🧾 Invoice</button>
+                        <button onClick={() => printLabel(o)} className="px-2 py-1 bg-green-50 text-green-700 rounded text-xs hover:bg-green-100" title="Print Label">🏷️ Label</button>
+                        <button onClick={() => deleteOrder(o.id)} className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-red-100">🗑</button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -262,9 +350,25 @@ export default function AdminClient() {
                 <tbody>
                   {categories.map(c => (
                     <tr key={c.id} className="border-t hover:bg-gray-50">
-                      <td className="p-3 text-xl">{c.emoji || '—'}</td>
-                      <td className="p-3 font-semibold">{c.name}</td>
-                      <td className="p-3"><button onClick={() => deleteCategory(c.id)} className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-red-100">🗑</button></td>
+                      {editCategory?.id === c.id ? (
+                        <td colSpan={3} className="p-3">
+                          <form onSubmit={saveCategory} className="flex gap-2 items-center">
+                            <input name="emoji" defaultValue={c.emoji || ''} placeholder="🌰" className="w-16 px-2 py-1.5 border rounded-lg outline-none focus:border-primary text-sm" />
+                            <input name="name" required defaultValue={c.name} className="flex-1 px-3 py-1.5 border rounded-lg outline-none focus:border-primary text-sm" />
+                            <button type="submit" className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary-dark">Save</button>
+                            <button type="button" onClick={() => setEditCategory(null)} className="px-3 py-1.5 bg-gray-100 rounded-lg text-xs hover:bg-gray-200">Cancel</button>
+                          </form>
+                        </td>
+                      ) : (
+                        <>
+                          <td className="p-3 text-xl">{c.emoji || '—'}</td>
+                          <td className="p-3 font-semibold">{c.name}</td>
+                          <td className="p-3 flex gap-2">
+                            <button onClick={() => setEditCategory(c)} className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-gray-200">✏️</button>
+                            <button onClick={() => deleteCategory(c.id)} className="px-2 py-1 bg-gray-100 rounded text-xs hover:bg-red-100">🗑</button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
