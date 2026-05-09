@@ -54,7 +54,7 @@ export default function Header({ onSearch, onOpenAuth, onOpenTrack, onOpenProfil
           {/* Mobile search toggle */}
           <button onClick={() => setMobileSearchOpen(!mobileSearchOpen)} className="md:hidden text-sm px-2 py-2 rounded-lg hover:bg-white/10">🔍</button>
 
-          <Link href="/admin" className="text-sm px-3 py-2 rounded-lg hover:bg-white/10 hidden md:flex items-center gap-1">📊 Admin</Link>
+          <Link href="/admin" className="text-sm px-2 md:px-3 py-2 rounded-lg hover:bg-white/10 flex items-center gap-1">📊 <span className="hidden md:inline">Admin</span></Link>
 
           {!user ? (
             <>
