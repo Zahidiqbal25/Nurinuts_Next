@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 
 export default function Footer() {
-  const [contact, setContact] = useState({ email: 'hello@nutrinuts.com', phone: '+91 98765 43210', address: 'Mumbai, India', pincode: '' })
+  const [contact, setContact] = useState({ name: '', email: 'hello@nutrinuts.com', phone: '+91 98765 43210', address: 'Mumbai, India', pincode: '' })
 
   useEffect(() => {
     fetch('/api/settings/contact').then(r => r.json()).then(setContact).catch(() => {})
@@ -38,6 +38,7 @@ export default function Footer() {
         </div>
         <div>
           <h3 className="font-display text-white text-lg mb-4">Contact Us</h3>
+          {contact.name && <p className="text-sm font-semibold text-white mb-1">{contact.name}</p>}
           <p className="text-sm">📧 {contact.email}</p>
           <p className="text-sm mt-1">📞 {contact.phone}</p>
           <p className="text-sm mt-1">📍 {contact.address}{contact.pincode ? ` — ${contact.pincode}` : ''}</p>

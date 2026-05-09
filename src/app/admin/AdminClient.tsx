@@ -12,7 +12,7 @@ export default function AdminClient() {
   const [categories, setCategories] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
   const [banner, setBanner] = useState('')
-  const [contact, setContact] = useState({ email: '', phone: '', address: '', pincode: '' })
+  const [contact, setContact] = useState({ name: '', email: '', phone: '', address: '', pincode: '' })
   const [editProduct, setEditProduct] = useState<any>(null)
   const [showProductModal, setShowProductModal] = useState(false)
   const [imagePreview, setImagePreview] = useState('')
@@ -338,6 +338,7 @@ export default function AdminClient() {
             <div className="bg-white rounded-xl shadow-sm p-5">
               <h2 className="font-semibold mb-3">📞 Contact Info</h2>
               <div className="grid grid-cols-2 gap-3 mb-3">
+                <input value={contact.name} onChange={e => setContact({ ...contact, name: e.target.value })} placeholder="Name" className="px-4 py-2.5 border rounded-lg outline-none focus:border-primary" />
                 <input value={contact.email} onChange={e => setContact({ ...contact, email: e.target.value })} placeholder="Email" className="px-4 py-2.5 border rounded-lg outline-none focus:border-primary" />
                 <input value={contact.phone} onChange={e => setContact({ ...contact, phone: e.target.value })} placeholder="Phone" className="px-4 py-2.5 border rounded-lg outline-none focus:border-primary" />
                 <input value={contact.address} onChange={e => setContact({ ...contact, address: e.target.value })} placeholder="Address" className="px-4 py-2.5 border rounded-lg outline-none focus:border-primary" />
