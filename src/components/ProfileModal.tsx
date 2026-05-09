@@ -8,6 +8,9 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const [pwLoading, setPwLoading] = useState(false)
   const [error, setError] = useState('')
   const [pwError, setPwError] = useState('')
+  const [pwStep, setPwStep] = useState<'form' | 'otp'>('form')
+  const [pwOtp, setPwOtp] = useState('')
+  const [pwData, setPwData] = useState<{ currentPassword: string; newPassword: string } | null>(null)
 
   async function handleProfile(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -25,10 +28,24 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
     e.preventDefault()
     setPwError(''); setPwLoading(true)
     const fd = new FormData(e.currentTarget)
-    const res = await fetch(`/api/users/${user!.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: fd.get('currentPassword'), newPassword: fd.get('newPassword') }) })
+    const currentPassword = fd.get('currentPassword') as string
+    const newPassword = fd.get('newPassword') as string
+
+    // Step 1: Send OTP
+    const res = await fetch(`/api/users/${user!.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword, action: 'send-otp' }) })
     const data = await res.json()
     setPwLoading(false)
-    if (res.ok) { showToast('Password updated!');(e.target as HTMLFormElement).reset() }
+    if (res.ok) { setPwData({ currentPassword, newPassword }); setPwStep('otp'); showToast('📧 Verification code sent to your email') }
+    else setPwError(data.error)
+  }
+
+  async function handlePwOtpVerify(e: React.FormEvent) {
+    e.preventDefault()
+    setPwError(''); setPwLoading(true)
+    const res = await fetch(`/api/users/${user!.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...pwData, code: pwOtp }) })
+    const data = await res.json()
+    setPwLoading(false)
+    if (res.ok) { showToast('Password updated!'); setPwStep('form'); setPwOtp(''); setPwData(null) }
     else setPwError(data.error)
   }
 
@@ -59,13 +76,24 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
           </form>
 
           {/* Change Password */}
-          <form onSubmit={handlePassword} className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-wider text-primary border-b-2 pb-2">🔒 Change Password</p>
-            <input name="currentPassword" type="password" required placeholder="Current Password" className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
-            <input name="newPassword" type="password" required minLength={6} placeholder="New Password (min 6 chars)" className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
-            {pwError && <p className="text-red-500 text-sm">{pwError}</p>}
-            <button type="submit" disabled={pwLoading} className="w-full btn-primary">{pwLoading ? 'Updating...' : 'Update Password'}</button>
-          </form>
+          {pwStep === 'form' ? (
+            <form onSubmit={handlePassword} className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-primary border-b-2 pb-2">🔒 Change Password</p>
+              <input name="currentPassword" type="password" required placeholder="Current Password" className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
+              <input name="newPassword" type="password" required minLength={6} placeholder="New Password (min 6 chars)" className="w-full px-4 py-2.5 border-2 rounded-lg outline-none focus:border-primary" />
+              {pwError && <p className="text-red-500 text-sm">{pwError}</p>}
+              <button type="submit" disabled={pwLoading} className="w-full btn-primary">{pwLoading ? 'Sending code...' : 'Update Password'}</button>
+            </form>
+          ) : (
+            <form onSubmit={handlePwOtpVerify} className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-primary border-b-2 pb-2">🔒 Verify Email Code</p>
+              <p className="text-sm text-gray-500">Enter the code sent to <strong>{user?.email}</strong></p>
+              <input type="text" value={pwOtp} onChange={e => setPwOtp(e.target.value)} maxLength={6} placeholder="6-digit code" className="w-full px-4 py-3 border-2 rounded-lg text-center text-2xl font-bold tracking-[12px] outline-none focus:border-primary" />
+              {pwError && <p className="text-red-500 text-sm">{pwError}</p>}
+              <button type="submit" disabled={pwLoading} className="w-full btn-primary">{pwLoading ? 'Verifying...' : 'Verify & Update Password'}</button>
+              <button type="button" onClick={() => { setPwStep('form'); setPwError('') }} className="w-full btn-secondary text-sm">← Back</button>
+            </form>
+          )}
         </div>
       </div>
     </div>

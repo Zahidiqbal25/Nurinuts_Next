@@ -1,7 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function AdminClient() {
+  const router = useRouter()
   const [authed, setAuthed] = useState(false)
   const [section, setSection] = useState('dashboard')
   const [stats, setStats] = useState<any>({})
@@ -202,16 +204,89 @@ export default function AdminClient() {
     setTimeout(() => { win.print(); win.close() }, 300)
   }
 
+  const [forgotPassword, setForgotPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [fpEmail, setFpEmail] = useState('')
+  const [fpOtp, setFpOtp] = useState('')
+  const [fpStep, setFpStep] = useState<'email' | 'otp' | 'reset'>('email')
+  const [fpLoading, setFpLoading] = useState(false)
+  const [fpError, setFpError] = useState('')
+
+  async function handleFpSendOtp(e: React.FormEvent) {
+    e.preventDefault()
+    setFpError(''); setFpLoading(true)
+    const res = await fetch('/api/admin/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fpEmail }) })
+    const data = await res.json()
+    setFpLoading(false)
+    if (res.ok) setFpStep('otp')
+    else setFpError(data.error)
+  }
+
+  async function handleFpVerify(e: React.FormEvent) {
+    e.preventDefault()
+    setFpError(''); setFpLoading(true)
+    const res = await fetch('/api/admin/verify-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fpEmail, code: fpOtp }) })
+    const data = await res.json()
+    setFpLoading(false)
+    if (res.ok) setFpStep('reset')
+    else setFpError(data.error)
+  }
+
+  async function handleFpReset(e: React.FormEvent) {
+    e.preventDefault()
+    setFpError(''); setFpLoading(true)
+    const res = await fetch('/api/admin/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fpEmail, code: fpOtp, newPassword }) })
+    const data = await res.json()
+    setFpLoading(false)
+    if (res.ok) { alert('Password reset successfully!'); setForgotPassword(false); setFpStep('email'); setFpOtp(''); setNewPassword('') }
+    else setFpError(data.error)
+  }
+
   if (!authed) {
+    if (forgotPassword) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-dark to-primary">
+          <div className="bg-white p-10 rounded-xl w-full max-w-sm shadow-2xl text-center">
+            <h1 className="font-display text-2xl text-primary mb-2"><img src="/logo.png" alt="Logo" className="h-10 mx-auto mix-blend-multiply" /></h1>
+            <p className="text-gray-500 text-sm mb-6">Reset Admin Password</p>
+            {fpStep === 'email' && (
+              <form onSubmit={handleFpSendOtp}>
+                <input type="email" value={fpEmail} onChange={e => setFpEmail(e.target.value)} placeholder="Admin email" required className="w-full px-4 py-3 border-2 rounded-lg mb-4 outline-none focus:border-primary" />
+                {fpError && <p className="text-red-500 text-sm mb-3">{fpError}</p>}
+                <button type="submit" disabled={fpLoading} className="w-full btn-primary mb-3">{fpLoading ? 'Sending...' : 'Send OTP'}</button>
+              </form>
+            )}
+            {fpStep === 'otp' && (
+              <form onSubmit={handleFpVerify}>
+                <p className="text-sm text-gray-500 mb-3">Enter the code sent to <strong>{fpEmail}</strong></p>
+                <input type="text" value={fpOtp} onChange={e => setFpOtp(e.target.value)} maxLength={6} placeholder="6-digit code" className="w-full px-4 py-3 border-2 rounded-lg text-center text-2xl font-bold tracking-[12px] mb-4 outline-none focus:border-primary" />
+                {fpError && <p className="text-red-500 text-sm mb-3">{fpError}</p>}
+                <button type="submit" disabled={fpLoading} className="w-full btn-primary mb-3">{fpLoading ? 'Verifying...' : 'Verify Code'}</button>
+              </form>
+            )}
+            {fpStep === 'reset' && (
+              <form onSubmit={handleFpReset}>
+                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="New password" required minLength={6} className="w-full px-4 py-3 border-2 rounded-lg mb-4 outline-none focus:border-primary" />
+                {fpError && <p className="text-red-500 text-sm mb-3">{fpError}</p>}
+                <button type="submit" disabled={fpLoading} className="w-full btn-primary mb-3">{fpLoading ? 'Resetting...' : 'Reset Password'}</button>
+              </form>
+            )}
+            <button onClick={() => { setForgotPassword(false); setFpStep('email'); setFpError('') }} className="text-primary text-sm font-semibold">← Back to Login</button>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-dark to-primary">
         <div className="bg-white p-10 rounded-xl w-full max-w-sm shadow-2xl text-center">
-          <h1 className="font-display text-2xl text-primary mb-2"><img src="/logo.jpg" alt="Logo" className="h-10 mx-auto" /></h1>
+          <h1 className="font-display text-2xl text-primary mb-2"><img src="/logo.png" alt="Logo" className="h-10 mx-auto mix-blend-multiply" /></h1>
           <p className="text-gray-500 text-sm mb-6">Admin Panel Login</p>
           <form onSubmit={handleLogin}>
             <input name="password" type="password" placeholder="Enter admin password" required className="w-full px-4 py-3 border-2 rounded-lg mb-4 outline-none focus:border-primary" />
             <button type="submit" className="w-full btn-primary">Login</button>
           </form>
+          <button onClick={() => setForgotPassword(true)} className="text-primary text-sm font-semibold mt-4">Forgot Password?</button>
         </div>
       </div>
     )
@@ -226,7 +301,7 @@ export default function AdminClient() {
 
       {/* Sidebar */}
       <aside className={`w-60 bg-primary-dark text-white py-5 fixed h-screen overflow-y-auto z-[100] transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="px-5 pb-5 border-b border-white/10 flex justify-between items-center"><img src="/logo.jpg" alt="Logo" className="h-8 w-auto" /><button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/70 hover:text-white">✕</button></div>
+        <div className="px-5 pb-5 border-b border-white/10 flex justify-between items-center"><img src="/logo.png" alt="Logo" className="h-8 w-auto mix-blend-screen" /><button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/70 hover:text-white">✕</button></div>
         <nav className="mt-5 space-y-1">
           {nav.map(([key, icon, label]) => (
             <button key={key} onClick={() => { setSection(key); setSidebarOpen(false) }} className={`w-full text-left flex items-center gap-3 px-6 py-3 text-sm transition-colors ${section === key ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'}`}>
@@ -234,7 +309,7 @@ export default function AdminClient() {
             </button>
           ))}
           <a href="/" className="flex items-center gap-3 px-6 py-3 text-sm text-white/70 hover:bg-white/5"><span>🏪</span> View Store</a>
-          <button onClick={() => { sessionStorage.removeItem('df_admin'); setAuthed(false) }} className="w-full text-left flex items-center gap-3 px-6 py-3 text-sm text-white/70 hover:bg-white/5"><span>🚪</span> Logout</button>
+          <button onClick={() => { sessionStorage.removeItem('df_admin'); router.push('/') }} className="w-full text-left flex items-center gap-3 px-6 py-3 text-sm text-white/70 hover:bg-white/5"><span>🚪</span> Logout</button>
         </nav>
       </aside>
 
