@@ -37,7 +37,7 @@ export default function Header({ onSearch, onOpenAuth, onOpenTrack, onOpenProfil
         </div>
       )}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-3 md:gap-5">
-        <Link href="/" className="font-display text-xl md:text-2xl font-bold shrink-0">🧵 Red<span className="text-accent">Thread</span></Link>
+        <Link href="/" className="shrink-0"><img src="/logo.jpg" alt="Logo" className="h-8 md:h-10 w-auto" /></Link>
 
         {/* Desktop search */}
         <div className="flex-1 max-w-md relative hidden md:block">

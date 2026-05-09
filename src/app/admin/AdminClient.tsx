@@ -206,7 +206,7 @@ export default function AdminClient() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-dark to-primary">
         <div className="bg-white p-10 rounded-xl w-full max-w-sm shadow-2xl text-center">
-          <h1 className="font-display text-2xl text-primary mb-2">🧵 Red Thread</h1>
+          <h1 className="font-display text-2xl text-primary mb-2"><img src="/logo.jpg" alt="Logo" className="h-10 mx-auto" /></h1>
           <p className="text-gray-500 text-sm mb-6">Admin Panel Login</p>
           <form onSubmit={handleLogin}>
             <input name="password" type="password" placeholder="Enter admin password" required className="w-full px-4 py-3 border-2 rounded-lg mb-4 outline-none focus:border-primary" />
@@ -226,7 +226,7 @@ export default function AdminClient() {
 
       {/* Sidebar */}
       <aside className={`w-60 bg-primary-dark text-white py-5 fixed h-screen overflow-y-auto z-[100] transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="px-5 pb-5 border-b border-white/10 font-display text-lg flex justify-between items-center">🧵 <span className="text-accent">Red Thread</span><button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/70 hover:text-white">✕</button></div>
+        <div className="px-5 pb-5 border-b border-white/10 flex justify-between items-center"><img src="/logo.jpg" alt="Logo" className="h-8 w-auto" /><button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/70 hover:text-white">✕</button></div>
         <nav className="mt-5 space-y-1">
           {nav.map(([key, icon, label]) => (
             <button key={key} onClick={() => { setSection(key); setSidebarOpen(false) }} className={`w-full text-left flex items-center gap-3 px-6 py-3 text-sm transition-colors ${section === key ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'}`}>
@@ -243,7 +243,7 @@ export default function AdminClient() {
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between mb-4 bg-white rounded-xl p-3 shadow-sm">
           <button onClick={() => setSidebarOpen(true)} className="text-primary text-xl">☰</button>
-          <span className="font-display text-primary">Red Thread Admin</span>
+          <span className="font-display text-primary">Admin Panel</span>
           <span></span>
         </div>
         {section === 'dashboard' && (
