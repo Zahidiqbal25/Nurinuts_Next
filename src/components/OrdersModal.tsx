@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useStore } from '@/lib/store-context'
+import { API_BASE } from '@/lib/api'
 
 export default function OrdersModal({ onClose }: { onClose: () => void }) {
   const { user, showToast } = useStore()
@@ -11,7 +12,7 @@ export default function OrdersModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (!user) return
     function fetchOrders() {
-      fetch(`/api/users/${user!.id}/orders`, { cache: 'no-store' })
+      fetch(`${API_BASE}/api/users/${user!.id}/orders`, { cache: 'no-store' })
         .then(r => r.json())
         .then(data => { setOrders(data); setLoading(false) })
     }
@@ -23,7 +24,7 @@ export default function OrdersModal({ onClose }: { onClose: () => void }) {
   async function cancelOrder(id: number) {
     if (!confirm('Are you sure you want to cancel this order?')) return
     setCancelling(id)
-    const res = await fetch(`/api/orders/${id}/cancel`, { method: 'PUT' })
+    const res = await fetch(`${API_BASE}/api/orders/${id}/cancel`, { method: 'PUT' })
     const data = await res.json()
     setCancelling(null)
     if (res.ok) {

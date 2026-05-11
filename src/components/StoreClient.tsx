@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect } from 'react'
 import { StoreProvider, useStore } from '@/lib/store-context'
+import { API_BASE } from '@/lib/api'
 import Header from '@/components/Header'
 import CartSidebar from '@/components/CartSidebar'
 import ProductCard from '@/components/ProductCard'
@@ -21,7 +22,7 @@ function ResetPasswordModal({ token, onClose }: { token: string; onClose: () => 
     e.preventDefault()
     setError(''); setLoading(true)
     const fd = new FormData(e.currentTarget)
-    const res = await fetch('/api/users/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, newPassword: fd.get('newPassword') }) })
+    const res = await fetch(`${API_BASE}/api/users/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, newPassword: fd.get('newPassword') }) })
     const data = await res.json()
     setLoading(false)
     if (res.ok) { setDone(true); showToast('Password reset successfully!') }

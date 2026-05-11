@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useStore } from '@/lib/store-context'
+import { API_BASE } from '@/lib/api'
 
 export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mode: 'login' | 'register'; onClose: () => void; onSwitch: (m: 'login' | 'register') => void }) {
   const { setUser, showToast } = useStore()
@@ -23,7 +24,7 @@ export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mo
     e.preventDefault()
     setError(''); setLoading(true)
     const fd = new FormData(e.currentTarget)
-    const res = await fetch('/api/users/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fd.get('email') }) })
+    const res = await fetch(`${API_BASE}/api/users/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fd.get('email') }) })
     const data = await res.json()
     setLoading(false)
     if (res.ok) setForgotSent(true)
@@ -34,7 +35,7 @@ export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mo
     e.preventDefault()
     setError('')
     const fd = new FormData(e.currentTarget)
-    const res = await fetch('/api/users/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }) })
+    const res = await fetch(`${API_BASE}/api/users/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }) })
     const data = await res.json()
     if (res.ok) { setUser(data); onClose(); showToast(`Welcome back, ${data.name}!`) }
     else setError(data.error)
@@ -46,7 +47,7 @@ export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mo
     const fd = new FormData(e.currentTarget)
     const data = { name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone'), password: fd.get('password'), address: fd.get('address') || '', city: fd.get('city') || '', pincode: fd.get('pincode') || '' }
 
-    const res = await fetch('/api/users/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: data.email }) })
+    const res = await fetch(`${API_BASE}/api/users/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: data.email }) })
     setLoading(false)
     const result = await res.json()
     if (res.ok) { setRegData(data); setOtpStep(true) }
@@ -56,10 +57,10 @@ export default function AuthModal({ mode: initialMode, onClose, onSwitch }: { mo
   async function handleVerifyOtp(e: React.FormEvent) {
     e.preventDefault()
     setError(''); setLoading(true)
-    const verifyRes = await fetch('/api/users/verify-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: regData.email, code: otpCode }) })
+    const verifyRes = await fetch(`${API_BASE}/api/users/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: regData.email, code: otpCode }) })
     if (!verifyRes.ok) { const d = await verifyRes.json(); setError(d.error); setLoading(false); return }
 
-    const regRes = await fetch('/api/users/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regData) })
+    const regRes = await fetch(`${API_BASE}/api/users/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regData) })
     setLoading(false)
     const data = await regRes.json()
     if (regRes.ok) { setUser(data); onClose(); showToast(`Welcome, ${data.name}! Account created.`) }

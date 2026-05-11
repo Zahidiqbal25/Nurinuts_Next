@@ -5,9 +5,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "build:mobile": "node scripts/build-mobile.js",
+    "cap:sync": "npx cap sync",
+    "cap:open": "npx cap open android",
+    "mobile": "npm run build:mobile && npm run cap:sync && npm run cap:open"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.3",
+    "@capacitor/browser": "^8.0.0",
+    "@capacitor/cli": "^8.3.3",
+    "@capacitor/core": "^8.3.3",
+    "@capacitor/status-bar": "^8.0.0",
     "@supabase/supabase-js": "^2.105.1",
     "next": "^14.2.0",
     "nodemailer": "^8.0.6",

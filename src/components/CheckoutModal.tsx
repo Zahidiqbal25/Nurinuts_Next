@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useStore } from '@/lib/store-context'
+import { API_BASE } from '@/lib/api'
 
 export default function CheckoutModal({ onClose }: { onClose: () => void }) {
   const { cart, user, clearCart, showToast } = useStore()
@@ -23,7 +24,7 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
     const customer = { name: fd.get('name') as string, phone: fd.get('phone') as string, email: fd.get('email') as string, address: fd.get('address') as string, city: fd.get('city') as string, pincode: fd.get('pincode') as string }
 
     if (!user) {
-      const res = await fetch('/api/orders/send-guest-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: customer.email }) })
+      const res = await fetch(`${API_BASE}/api/orders/send-guest-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: customer.email }) })
       setLoading(false)
       if (!res.ok) { const d = await res.json(); showToast('❌ ' + d.error); return }
       setPendingData({ customer, total, payment })
@@ -37,7 +38,7 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
   async function handleGuestVerify(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const res = await fetch('/api/orders/verify-guest-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: pendingData.customer.email, code: otpCode }) })
+    const res = await fetch(`${API_BASE}/api/orders/verify-guest-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: pendingData.customer.email, code: otpCode }) })
     if (!res.ok) { const d = await res.json(); showToast('❌ ' + d.error); setLoading(false); return }
     await placeOrder(pendingData.customer, pendingData.payment)
   }
@@ -45,7 +46,7 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
   async function placeOrder(customer: any, payMethod: string) {
     if (payMethod === 'Razorpay') {
       try {
-        const rzpOrder = await fetch('/api/payments/create-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: total }) }).then(r => r.json())
+        const rzpOrder = await fetch(`${API_BASE}/api/payments/create-order`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: total }) }).then(r => r.json())
         if (rzpOrder.error) throw new Error(rzpOrder.error)
 
         const options = {
@@ -55,7 +56,7 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
           prefill: { name: customer.name, email: customer.email, contact: customer.phone },
           theme: { color: '#2d5016' },
           handler: async (response: any) => {
-            const verify = await fetch('/api/payments/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(response) }).then(r => r.json())
+            const verify = await fetch(`${API_BASE}/api/payments/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(response) }).then(r => r.json())
             if (verify.verified) await finalizeOrder(customer, 'Razorpay', response.razorpay_payment_id)
             else showToast('❌ Payment verification failed')
           },
@@ -71,7 +72,7 @@ export default function CheckoutModal({ onClose }: { onClose: () => void }) {
   }
 
   async function finalizeOrder(customer: any, payMethod: string, paymentId: string) {
-    const res = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user?.id || 0, customer, items: cart, total, payment: payMethod, paymentId }) })
+    const res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user?.id || 0, customer, items: cart, total, payment: payMethod, paymentId }) })
     const order = await res.json()
     setLoading(false)
     clearCart()

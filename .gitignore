@@ -1,3 +1,6 @@
 node_modules/
 .next/
+out/
 .env.local
+_api_backup/
+_admin_backup/

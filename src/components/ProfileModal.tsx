@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useStore } from '@/lib/store-context'
+import { API_BASE } from '@/lib/api'
 
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const { user, setUser, showToast } = useStore()
@@ -17,7 +18,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
     setError(''); setLoading(true)
     const fd = new FormData(e.currentTarget)
     const body = { name: fd.get('name'), phone: fd.get('phone'), address: fd.get('address'), city: fd.get('city'), pincode: fd.get('pincode') }
-    const res = await fetch(`/api/users/${user!.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    const res = await fetch(`${API_BASE}/api/users/${user!.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const data = await res.json()
     setLoading(false)
     if (res.ok) { setUser(data); showToast('Profile updated!'); onClose() }
@@ -32,7 +33,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
     const newPassword = fd.get('newPassword') as string
 
     // Step 1: Send OTP
-    const res = await fetch(`/api/users/${user!.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword, action: 'send-otp' }) })
+    const res = await fetch(`${API_BASE}/api/users/${user!.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword, action: 'send-otp' }) })
     const data = await res.json()
     setPwLoading(false)
     if (res.ok) { setPwData({ currentPassword, newPassword }); setPwStep('otp'); showToast('📧 Verification code sent to your email') }
@@ -42,7 +43,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   async function handlePwOtpVerify(e: React.FormEvent) {
     e.preventDefault()
     setPwError(''); setPwLoading(true)
-    const res = await fetch(`/api/users/${user!.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...pwData, code: pwOtp }) })
+    const res = await fetch(`${API_BASE}/api/users/${user!.id}/password`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...pwData, code: pwOtp }) })
     const data = await res.json()
     setPwLoading(false)
     if (res.ok) { showToast('Password updated!'); setPwStep('form'); setPwOtp(''); setPwData(null) }

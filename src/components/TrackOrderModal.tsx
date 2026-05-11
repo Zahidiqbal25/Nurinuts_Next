@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { API_BASE } from '@/lib/api'
 
 export default function TrackOrderModal({ onClose }: { onClose: () => void }) {
   const [phone, setPhone] = useState('')
@@ -10,7 +11,7 @@ export default function TrackOrderModal({ onClose }: { onClose: () => void }) {
   async function handleTrack(e: React.FormEvent) {
     e.preventDefault()
     setError(''); setLoading(true)
-    const res = await fetch(`/api/orders/track/${phone.trim()}`, { cache: 'no-store' })
+    const res = await fetch(`${API_BASE}/api/orders/track/${phone.trim()}`, { cache: 'no-store' })
     const data = await res.json()
     setLoading(false)
     if (!res.ok) { setError(data.error); return }
